@@ -1,0 +1,7 @@
+venv\Scripts\activate
+set FLASK_APP=server.py
+flask run --host=0.0.0.0
+
+
+
+RR.exe * "^\[\d\d\d\d-\d\d-\d\d\] " "" /dirs

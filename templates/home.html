@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sushi GO</title>
+</head>
+<body>
+    There are {{numOfPlayers}}/{{gameSize}} players in the game.</body></br></br>
+    <form action="start" method='post'>
+        <label for="player_name">Your name:</label>
+        <input type="text" name="player_name" value="" required></br></br>
+        {% if numOfPlayers == 0 %}
+            <label for="number_of_players">How many players:</label>
+            <input type="text" name="number_of_players" value="" required></br></br>
+        {% endif %}
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
