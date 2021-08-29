@@ -5,6 +5,7 @@
     <title>Sushi GO</title>
 </head>
 <body>
+    <img src="{{url_for('static', filename='home.jpg')}}" style="max-height: 30%;max-width: 30%"><br><br>
     {% if errorMessage != None %}
         <script>alert("{{errorMessage}}")</script>
     {% endif %}

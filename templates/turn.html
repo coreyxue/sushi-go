@@ -24,7 +24,7 @@
         Pick your card:</br></br>
         <form action="{{url_for('turn_commit', playerId=player.id)}}" method='post'>
             [{% for card in player.currentTurnCards %}
-                <img src="{{url_for('static', filename=card.alias+'.png')}}" alt="{{card.name}}" style="max-height: 10%;max-width: 10%">
+                <img src="{{url_for('static', filename=card.alias+'.png')}}" alt="{{card.name}}">
                 <input type="checkbox" name={{card.id}} style="width: 40px; height: 40px;">
                 &nbsp;{{card.name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             {% endfor %}]
@@ -35,19 +35,19 @@
             {% endif %}
             </br></br>
             <input type="radio" id="wasabi_egg_nigiri" name="useWasabi" value="wasabi_egg_nigiri">
-            <label for="wasabi_egg_nigiri">top egg nigiri to wasabi</label>
+            <label for="wasabi_egg_nigiri">top egg nigiri to wasabi</label></br></br>
 
             <input type="radio" id="wasabi_salmon_nigiri" name="useWasabi" value="wasabi_salmon_nigiri">
-            <label for="wasabi_salmon_nigiri">top salmon nigiri to wasabi</label>
+            <label for="wasabi_salmon_nigiri">top salmon nigiri to wasabi</label></br></br>
 
             <input type="radio" id="wasabi_squid_nigiri" name="useWasabi" value="wasabi_squid_nigiri">
-            <label for="wasabi_squid_nigiri">top squid nigiri to wasabi</label>
+            <label for="wasabi_squid_nigiri">top squid nigiri to wasabi</label></br></br>
 
             <input type="radio" id="wasabi_both" name="useWasabi" value="wasabi_both">
-            <label for="wasabi_both">top both selected nigiri to 2 wasabis</label>
+            <label for="wasabi_both">top both selected nigiri to 2 wasabis</label></br></br>
 
             <input type="radio" id="wasabi_unchecked" name="useWasabi" value="wasabi_unchecked" checked>
-            <label for="wasabi_unchecked">unchecked</label>
+            <label for="wasabi_unchecked">unchecked</label></br></br>
 
             <input type="submit" value="Submit">
         </form>
