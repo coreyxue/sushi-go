@@ -5,7 +5,8 @@ import uuid
 
 
 
-app = Flask(__name__, static_url_path='', static_folder='C:\\Users\\Corey\\Desktop\\proj\\sushi-go\\static')
+#app = Flask(__name__, static_url_path='', static_folder='C:\\Users\\Corey\\Desktop\\proj\\sushi-go\\static')
+app = Flask(__name__, static_url_path='')
 
 def pupolateCardDeck():
     cardDeck = []
