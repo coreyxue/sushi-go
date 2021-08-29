@@ -29,14 +29,26 @@
                 &nbsp;{{card.name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             {% endfor %}]
             </br></br>
-            {% if player.haveWasabi() %}
-                <input type="checkbox" name="useWasabi">
-                &nbsp;Use Wasabi?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            {% endif %}
             {% if player.haveChopsticks() %}
                 <input type="checkbox" name="useChopsticks">
                 &nbsp;Use Chopsticks?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             {% endif %}
+            </br></br>
+            <input type="radio" id="wasabi_egg_nigiri" name="useWasabi" value="wasabi_egg_nigiri">
+            <label for="wasabi_egg_nigiri">top egg nigiri to wasabi</label>
+
+            <input type="radio" id="wasabi_salmon_nigiri" name="useWasabi" value="wasabi_salmon_nigiri">
+            <label for="wasabi_salmon_nigiri">top salmon nigiri to wasabi</label>
+
+            <input type="radio" id="wasabi_squid_nigiri" name="useWasabi" value="wasabi_squid_nigiri">
+            <label for="wasabi_squid_nigiri">top squid nigiri to wasabi</label>
+
+            <input type="radio" id="wasabi_both" name="useWasabi" value="wasabi_both">
+            <label for="wasabi_both">top both selected nigiri to 2 wasabis</label>
+
+            <input type="radio" id="wasabi_unchecked" name="useWasabi" value="wasabi_unchecked" checked>
+            <label for="wasabi_unchecked">unchecked</label>
+
             <input type="submit" value="Submit">
         </form>
     {% endif %}

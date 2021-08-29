@@ -75,17 +75,19 @@ class Player:
                 return True
         return False
 
-    def haveWasabi(self):
+    def wasabiCount(self):
+        count = 0
         for card in self.handCards:
             if card.alias == 'wasabi' and card.topping == None:
-                return True
-        return False
+                count +=1
+        return count
 
-    def getWasabiCard(self):
+    def getWasabiCards(self):
+        cards = []
         for card in self.handCards:
             if card.alias == 'wasabi' and card.topping == None:
-                return card
-        return None
+                cards.append(card)
+        return cards
 
     def getChopsticksCard(self):
         for card in self.handCards:
@@ -119,6 +121,19 @@ class Player:
             elif card.alias == 'maki_rolls_3':
                     res['maki_rolls'] += 3
         return res
+
+    def returnChopsticks(self):
+        chopsticksCard = self.getChopsticksCard()
+        self.handCards.remove(chopsticksCard)
+        self.currentTurnCards.append(chopsticksCard)
+
+    def getNewCardToHands(self, newCard):
+        self.currentTurnCards.remove(newCard)
+        self.handCards.append(newCard)
+
+    def topNewCardToWasabi(self, newCard, wasabiCard):
+        wasabiCard.toTop(newCard)
+        self.currentTurnCards.remove(newCard)
 
 class Game:
     def __init__(self, numOfPlayers):
@@ -397,6 +412,26 @@ def getNewHandCards(playerId, request):
                 newHandCards.append(card)
     return newHandCards
 
+def getSpecificCardFromNewHandCards(cardAlias, newHandCards):
+    temp = [] + newHandCards
+    for card in temp:
+        if card.alias == cardAlias:
+            newHandCards.remove(card)
+            return card
+
+def playersWasabiCount(player, newHandCards):
+    count = 0
+    for card in newHandCards:
+        if card.alias == 'wasabi':
+            count += 1
+    return count + player.wasabiCount()
+
+def inNewHandCards(cardAlias, newHandCards):
+    for card in newHandCards:
+        if card.alias == cardAlias:
+            return True
+    return False
+
 # returns (result, errorMessage)
 def validateCommitRequest(playerId, request):
     if 'game' not in globals():
@@ -405,17 +440,48 @@ def validateCommitRequest(playerId, request):
     if game.status != GameStatus.TURN_STARTED:
         return (False, "Wait for other players to get their cards!")
     newHandCards = getNewHandCards(playerId, request)
-    useWasabi = request.form.get('useWasabi') != None
     useChopsticks = request.form.get('useChopsticks') != None
-    if useWasabi and useChopsticks:
-        return (False, "You can't use both wasabi and chopsticks in the same turn!")
     if useChopsticks and len(newHandCards) != 2:
         return (False, "Take 2 cards if use chopsticks!")
     if not useChopsticks and len(newHandCards) != 1:
         return (False, "You can only take 1 card!")
-    if useWasabi and newHandCards[0].alias not in ('salmon_nigiri', 'squid_nigiri', 'egg_nigiri'):
-        return (False, "You can only place nigiri on top of wasabis")
+
+    useWasabi = request.form.get('useWasabi') != 'wasabi_unchecked'
+    if useWasabi:
+        player = game.players[playerId]
+        wasabiMethod = request.form.get('useWasabi')
+        wasabiCount = playersWasabiCount(player, newHandCards)
+        if wasabiMethod == 'wasabi_egg_nigiri':
+            if not inNewHandCards('egg_nigiri', newHandCards) or wasabiCount<1:
+                return (False, "You didn't pick egg nigiri or you don't have wasabi!")
+        elif wasabiMethod == 'wasabi_salmon_nigiri':
+            if not inNewHandCards('salmon_nigiri', newHandCards) or wasabiCount<1:
+                return (False, "You didn't pick salmon nigiri or you don't have wasabi!")
+        elif wasabiMethod == 'wasabi_squid_nigiri':
+            if not inNewHandCards('squid_nigiri', newHandCards) or wasabiCount<1:
+                return (False, "You didn't pick squid nigiri or you don't have wasabi!")
+        elif wasabiMethod == 'wasabi_both':
+            if wasabiCount < 2:
+                return (False, "You don't have 2 wasabis to be topped!")
+            for card in newHandCards:
+                if card.alias not in ['egg_nigiri', 'salmon_nigiri', 'squid_nigiri']:
+                    return (False, "You didn't pick two nigiris!")
+        else:
+            return (False, "unknown use of wasabi" + wasabiMethod)
     return (True, "")
+
+def handleWasabi(nigiriAlias, newHandCards, player):
+    nigiri = getSpecificCardFromNewHandCards(nigiriAlias, newHandCards)
+    wasabiInOldHand = player.getWasabiCards()
+    if wasabiInOldHand != []:
+        player.topNewCardToWasabi(nigiri, wasabiInOldHand[0])
+        if len(newHandCards) > 0:
+            player.currentTurnCards.remove(newHandCards[0])
+            player.handCards.append(newHandCards[0])
+    else:
+        wasabi = getSpecificCardFromNewHandCards('wasabi', newHandCards)
+        player.topNewCardToWasabi(nigiri, wasabi)
+        player.getNewCardToHands(wasabi)
 
 @app.route('/turn_commit/<playerId>', methods=['POST'])
 def turn_commit(playerId):
@@ -426,24 +492,30 @@ def turn_commit(playerId):
     global game
     player = game.players[playerId]
 
-    useWasabi = request.form.get('useWasabi') != None
+    useWasabi = request.form.get('useWasabi') != 'wasabi_unchecked'
     useChopsticks = request.form.get('useChopsticks') != None
+    if useChopsticks:
+        player.returnChopsticks()
+
     newHandCards = getNewHandCards(playerId, request)
 
     if useWasabi:
-        player.getWasabiCard().toTop(newHandCards[0])
-        player.currentTurnCards.remove(newHandCards[0])
+        wasabiMethod = request.form.get('useWasabi')
+        if wasabiMethod == 'wasabi_egg_nigiri':
+            handleWasabi('egg_nigiri', newHandCards, player)
+        elif wasabiMethod == 'wasabi_salmon_nigiri':
+            handleWasabi('salmon_nigiri', newHandCards, player)
+        elif wasabiMethod == 'wasabi_squid_nigiri':
+            handleWasabi('squid_nigiri', newHandCards, player)
+        elif wasabiMethod == 'wasabi_both':
+            wasabiInOldHand = player.getWasabiCards()
+            player.topNewCardToWasabi(newHandCards[0], wasabiInOldHand[0])
+            player.topNewCardToWasabi(newHandCards[1], wasabiInOldHand[1])
     elif useChopsticks:
-        chopsticksCard = player.getChopsticksCard()
-        player.handCards.remove(chopsticksCard)
-        player.currentTurnCards.append(chopsticksCard)
-        player.currentTurnCards.remove(newHandCards[0])
-        player.currentTurnCards.remove(newHandCards[1])
-        player.handCards.append(newHandCards[0])
-        player.handCards.append(newHandCards[1])
+        player.getNewCardToHands(newHandCards[0])
+        player.getNewCardToHands(newHandCards[1])
     else:
-        player.currentTurnCards.remove(newHandCards[0])
-        player.handCards.append(newHandCards[0])
+        player.getNewCardToHands(newHandCards[0])
 
     player.status = PlayerStatus.WATING
     game.turnToCards[playerId] = player.currentTurnCards
