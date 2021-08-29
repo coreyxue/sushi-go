@@ -5,6 +5,9 @@
     <title>Sushi GO</title>
 </head>
 <body>
+    {% if errorMessage != None %}
+        <script>alert("{{errorMessage}}")</script>
+    {% endif %}
     There are {{numOfPlayers}}/{{gameSize}} players in the game.</body></br></br>
     <form action="start" method='post'>
         <label for="player_name">Your name:</label>

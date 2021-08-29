@@ -5,32 +5,46 @@
     <title>Sushi GO</title>
 </head>
 <body>
-    {{gameSize}} players game&nbsp;&nbsp;&nbsp;{{gameStatus}}<br>
+    {% if errorMessage != None %}
+        <script>alert("{{errorMessage}}")</script>
+    {% endif %}
+    {{gameSize}} players game&nbsp;&nbsp;&nbsp;round: {{roundNumber}}<br>
     Players:</br>
     {% for playerId in players.keys() %}
-        {{playerId}} {{players[playerId].name}} : {{players[playerId].status}}</br>
+        {{playerId}} {{players[playerId].name}} : {{players[playerId].status}} : {{players[playerId].score}}</br>
         [{%for card in players[playerId].handCards %}
-            &nbsp;{{card.name}}&nbsp;
+            <img src="{{url_for('static', filename=card.alias+'.png')}}" alt="{{card.name}}({{card.topping.name}}" style="max-height: 2%;max-width: 2%">
+            &nbsp;{{card.name}}({{card.topping.name}})&nbsp;
         {% endfor%}]
         </br></br></br>
     {% endfor%}
     {% if pageStatus == 'waiting'%}
-        Waiting for other players
-    {% elif pageStatus == 'playing'%}
+        Waiting for other players to join
+    {% elif pageStatus == 'playing' and player.currentTurnCards != [] %}
         Pick your card:</br></br>
-        <form action="{{url_for('turn_commit', playerId=playerId)}}" method='post'>
-            [{% for card in players[playerId].currentTurnCards %}
-                <input type="checkbox" name={{card.id}}>
+        <form action="{{url_for('turn_commit', playerId=player.id)}}" method='post'>
+            [{% for card in player.currentTurnCards %}
+                <img src="{{url_for('static', filename=card.alias+'.png')}}" alt="{{card.name}}" style="max-height: 10%;max-width: 10%">
+                <input type="checkbox" name={{card.id}} style="width: 40px; height: 40px;">
                 &nbsp;{{card.name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             {% endfor %}]
+            </br></br>
+            {% if player.haveWasabi() %}
+                <input type="checkbox" name="useWasabi">
+                &nbsp;Use Wasabi?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endif %}
+            {% if player.haveChopsticks() %}
+                <input type="checkbox" name="useChopsticks">
+                &nbsp;Use Chopsticks?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endif %}
             <input type="submit" value="Submit">
         </form>
-        </br></br></br>
-        Your cards:</br></br>
-        [{%for card in players[playerId].handCards %}
-            &nbsp;{{card.name}}&nbsp;
-        {% endfor%}]
-
     {% endif %}
+    </br></br></br>
+    Your cards (score = {{player.score}}):</br></br>
+    [{%for card in player.handCards %}
+        <img src="{{url_for('static', filename=card.alias+'.png')}}" alt="{{card.name}}({{card.topping.name}}" style="max-height: 5%;max-width: 5%">
+        &nbsp;{{card.name}}({{card.topping.name}})&nbsp;
+    {% endfor%}]
 </body>
 </html>
